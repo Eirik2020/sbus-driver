@@ -1,3 +1,9 @@
+// #### Set-up ####
+// Compiler directives
+#![no_std]
+#![no_main]
+
+
 // Imports
 use heapless::Deque;
 
