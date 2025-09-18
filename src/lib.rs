@@ -1,12 +1,15 @@
 // Imports
 use heapless::Deque;
 
-
 // ---- SBUS constants (type-level usable) ----
 const FRAME_LENGTH: usize = 25;
 const SBUS_START_BYTE: u8 = 0x0F;
 
-// ---- SBUS receiver using heapless Deque ----
+/// Type alias for 16 SBUS channels
+pub type Channels = [u16; 16];
+
+
+// #### SBUS Parser Implementation ####
 pub struct SbusReceiver {
     buffer: Deque<u8, FRAME_LENGTH>,
 }
