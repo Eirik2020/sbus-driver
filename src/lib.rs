@@ -5,8 +5,24 @@ use heapless::Deque;
 const FRAME_LENGTH: usize = 25;
 const SBUS_START_BYTE: u8 = 0x0F;
 
-/// Type alias for 16 SBUS channels
-pub type Channels = [u16; 16];
+/// Strongly typed SBUS channel container
+pub struct Channels([u16; 16]);
+impl Channels {
+    /// Always zero-initialized
+    pub fn new() -> Self {
+        Self([0u16; 16])
+    }
+
+    /// Internal (crate-only) mutable access for driver
+    pub(crate) fn update(&mut self, new: [u16; 16]) {
+        self.0 = new;
+    }
+
+    /// Public read-only access
+    pub fn channel(&self, idx: usize) -> Option<u16> {
+        self.0.get(idx).copied()
+    }
+}
 
 
 // #### SBUS Parser Implementation ####
@@ -39,14 +55,14 @@ impl SbusReceiver {
         cs == frame[23]
     }
 
-    pub fn extract_channels(frame: &[u8; FRAME_LENGTH]) -> [u16; 16] {
+    pub fn extract_channels(frame: &[u8; FRAME_LENGTH], out: &mut Channels) {
         let mut ch = [0u16; 16];
         for i in 0..16 {
             let b1 = frame[i * 2 + 1] as u16;
             let b2 = frame[i * 2 + 2] as u16;
             ch[i] = (b1 << 8) | b2;
         }
-        ch
+        out.update(ch); // only driver can update
     }
 
     pub fn scale_1000_2000(&self, ch: &[u16; 16]) -> [u16; 16] {
